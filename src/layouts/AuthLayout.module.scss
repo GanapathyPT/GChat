@@ -1,0 +1,17 @@
+.authContainer {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.authHeading {
+  text-align: center;
+  font-size: 2.5em;
+}
+
+.authCard {
+  padding: 2.5em;
+}
