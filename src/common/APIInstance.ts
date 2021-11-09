@@ -15,7 +15,9 @@ export const getApiInstance = () =>
   axios.create({
     baseURL: constants.baseURL,
     timeout: 5000,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+    headers: accessToken
+      ? {
+          Authorization: `Bearer ${accessToken}`,
+        }
+      : {},
   });

@@ -56,22 +56,13 @@ export const getAuthActions = (
   setAuthInfo: Dispatch<SetStateAction<AuthInfo>>
 ): AuthActions => ({
   login: async (email: string, password: string) => {
-    try {
-      const tokens = await loginUser(email, password);
-      console.log(tokens);
-      const authInfo = await authenticate(tokens);
-      setAuthInfo(authInfo);
-    } catch (err) {
-      console.error(err);
-    }
+    const tokens = await loginUser(email, password);
+    const authInfo = await authenticate(tokens);
+    setAuthInfo(authInfo);
   },
   register: async (username: string, email: string, password: string) => {
-    try {
-      const tokens = await registerUser(username, email, password);
-      const authInfo = await authenticate(tokens);
-      setAuthInfo(authInfo);
-    } catch (err) {
-      console.error(err);
-    }
+    const tokens = await registerUser(username, email, password);
+    const authInfo = await authenticate(tokens);
+    setAuthInfo(authInfo);
   },
 });
