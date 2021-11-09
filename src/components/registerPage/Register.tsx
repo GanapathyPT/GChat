@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { Button, Form } from "semantic-ui-react";
 
-function Register() {
+interface Props {
+  onSubmit: (username: string, email: string, password: string) => void;
+}
+
+function Register({ onSubmit }: Props) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   return (
-    <Form>
+    <Form onSubmit={() => onSubmit(username, email, password)}>
       <Form.Input
         label="UserName"
         placeholder="username"

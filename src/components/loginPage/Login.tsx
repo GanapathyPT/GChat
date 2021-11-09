@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { Button, Form } from "semantic-ui-react";
 
-function Login() {
+interface Props {
+  onSubmit: (email: string, password: string) => void;
+}
+
+function Login({ onSubmit }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   return (
-    <Form>
+    <Form onSubmit={async () => await onSubmit(email, password)}>
       <Form.Input
         label="Email"
         placeholder="email"
