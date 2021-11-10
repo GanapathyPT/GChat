@@ -9,8 +9,7 @@ function RegisterContainer() {
   const navigate = useNavigate();
   const errorControlRef = useRef<{
     setError: (error: Record<string, string>) => void;
-    clearError: () => void;
-    clearForm: () => void;
+    setLoading: (loading: boolean) => void;
   }>();
 
   const registerUser = async (
@@ -19,11 +18,15 @@ function RegisterContainer() {
     password: string
   ) => {
     try {
+      errorControlRef.current?.setLoading(true);
+      errorControlRef.current?.setError({});
       await register(username, email, password);
       navigate("/");
     } catch (err) {
       errorControlRef.current?.setError((err as any).response.data);
       console.error(err);
+    } finally {
+      errorControlRef.current?.setLoading(false);
     }
   };
 

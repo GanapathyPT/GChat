@@ -5,8 +5,7 @@ interface Props {
   ctrlRef: MutableRefObject<
     | {
         setError: (error: Record<string, string>) => void;
-        clearError: () => void;
-        clearForm: () => void;
+        setLoading: (loading: boolean) => void;
       }
     | undefined
   >;
@@ -18,19 +17,13 @@ function Register({ ctrlRef, onSubmit }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState<boolean>(false);
 
   useImperativeHandle(
     ctrlRef,
     () => ({
       setError,
-      clearError: () => {
-        setError({});
-      },
-      clearForm: () => {
-        setUsername("");
-        setEmail("");
-        setPassword("");
-      },
+      setLoading,
     }),
     []
   );
@@ -38,6 +31,7 @@ function Register({ ctrlRef, onSubmit }: Props) {
   return (
     <Form onSubmit={() => onSubmit(username, email, password)}>
       <Form.Input
+        required
         label="UserName"
         placeholder="username"
         icon="user"
@@ -47,6 +41,7 @@ function Register({ ctrlRef, onSubmit }: Props) {
         error={error.username}
       />
       <Form.Input
+        required
         label="Email"
         placeholder="email"
         icon="mail"
@@ -56,6 +51,7 @@ function Register({ ctrlRef, onSubmit }: Props) {
         error={error.email}
       />
       <Form.Input
+        required
         label="Password"
         placeholder="password"
         type="password"
@@ -65,18 +61,7 @@ function Register({ ctrlRef, onSubmit }: Props) {
         onChange={(e) => setPassword(e.target.value)}
         error={error.password}
       />
-      {/* <Divider horizontal>or</Divider>
-        <Form.Field className="btn__center">
-            <GoogleLogin
-                clientId={
-                    process.env.REACT_APP_GOOGLE_CLIENT_ID as string
-                }
-                buttonText="Register with Google"
-                onSuccess={onSuccess}
-                cookiePolicy="single_host_origin"
-            />
-        </Form.Field> */}
-      <Button type="submit" primary>
+      <Button type="submit" primary loading={loading} disabled={loading}>
         Sign Up
       </Button>
     </Form>

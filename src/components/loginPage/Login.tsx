@@ -1,17 +1,49 @@
-import { useState } from "react";
-import { Button, Form } from "semantic-ui-react";
-
+import { MutableRefObject, useImperativeHandle, useState } from "react";
+import { Button, Form, Icon, Label } from "semantic-ui-react";
+import styles from "./Login.module.scss";
 interface Props {
+  ctrlRef: MutableRefObject<
+    | {
+        setError: (errors: Record<string, string>) => void;
+        setLoading: (loading: boolean) => void;
+      }
+    | undefined
+  >;
   onSubmit: (email: string, password: string) => void;
 }
 
-function Login({ onSubmit }: Props) {
+function Login({ ctrlRef, onSubmit }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const onFormSubmit = async () => {
+    await onSubmit(email, password);
+    setPassword("");
+  };
+
+  useImperativeHandle(
+    ctrlRef,
+    () => ({
+      setError,
+      setLoading,
+    }),
+    []
+  );
 
   return (
-    <Form onSubmit={async () => await onSubmit(email, password)}>
+    <Form onSubmit={onFormSubmit}>
+      {error.general ? (
+        <div className={styles.alertContainer}>
+          <Label prompt color="red">
+            <Icon name="exclamation circle" />
+            {error.general}
+          </Label>
+        </div>
+      ) : null}
       <Form.Input
+        required
         label="Email"
         placeholder="email"
         icon="mail"
@@ -20,6 +52,7 @@ function Login({ onSubmit }: Props) {
         onChange={(e) => setEmail(e.target.value)}
       />
       <Form.Input
+        required
         label="Password"
         placeholder="password"
         type="password"
@@ -28,18 +61,7 @@ function Login({ onSubmit }: Props) {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      {/* <Divider horizontal>or</Divider>
-      <Form.Field>
-        <GoogleLogin
-            clientId={
-                process.env.REACT_APP_GOOGLE_CLIENT_ID as string
-            }
-            buttonText="Login with Google"
-            onSuccess={onSuccess}
-            cookiePolicy="single_host_origin"
-        />
-      </Form.Field> */}
-      <Button type="submit" primary>
+      <Button type="submit" primary loading={loading} disabled={loading}>
         Sign In
       </Button>
     </Form>
