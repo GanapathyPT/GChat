@@ -19,8 +19,8 @@ function Login({ ctrlRef, onSubmit }: Props) {
   const [loading, setLoading] = useState<boolean>(false);
 
   const onFormSubmit = async () => {
-    await onSubmit(email, password);
     setPassword("");
+    await onSubmit(email, password);
   };
 
   useImperativeHandle(

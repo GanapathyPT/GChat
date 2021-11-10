@@ -19,6 +19,11 @@ function Register({ ctrlRef, onSubmit }: Props) {
   const [error, setError] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<boolean>(false);
 
+  const onFormSubmit = async () => {
+    setPassword("");
+    await onSubmit(username, email, password);
+  };
+
   useImperativeHandle(
     ctrlRef,
     () => ({
@@ -29,7 +34,7 @@ function Register({ ctrlRef, onSubmit }: Props) {
   );
 
   return (
-    <Form onSubmit={() => onSubmit(username, email, password)}>
+    <Form onSubmit={onFormSubmit}>
       <Form.Input
         required
         label="UserName"

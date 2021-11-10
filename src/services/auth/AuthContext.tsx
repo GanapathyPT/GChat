@@ -20,7 +20,7 @@ export interface AuthActions {
     password: string
   ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  authenticate: (accessToken: string) => Promise<void>;
+  authenticate: (accessToken: string | null) => Promise<void>;
 }
 
 export type AuthContextType = AuthInfo & AuthActions;

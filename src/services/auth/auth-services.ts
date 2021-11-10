@@ -64,14 +64,18 @@ export const getAuthActions = (
   login: async (email: string, password: string) => {
     const tokens = await loginUser(email, password);
     const authInfo = await saveTokenAndGetUserDetails(tokens);
-    setAuthInfo(authInfo);
+    setAuthInfo({ ...authInfo, status: AuthStatus.Authenticated });
   },
   register: async (username: string, email: string, password: string) => {
     const tokens = await registerUser(username, email, password);
     const authInfo = await saveTokenAndGetUserDetails(tokens);
-    setAuthInfo(authInfo);
+    setAuthInfo({ ...authInfo, status: AuthStatus.Authenticated });
   },
-  authenticate: async (accessToken: string) => {
+  authenticate: async (accessToken: string | null) => {
+    if (accessToken === null) {
+      setAuthInfo((info) => ({ ...info, status: AuthStatus.NotAuthenticated }));
+      return;
+    }
     try {
       setAuthInfo((info) => ({
         ...info,

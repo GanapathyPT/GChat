@@ -11,15 +11,14 @@ import { useEffect } from "react";
 import { getToken, Token } from "./common/tokenLocalStorage";
 import { AuthStatus, useAuth } from "./services/auth/AuthContext";
 import { AppLoader } from "./components/common/AppLoader";
+import { RedirectifNeeded } from "./components/common/RedirectifNeeded";
 
 function App() {
   const { authenticate, status } = useAuth();
 
   useEffect(() => {
     const token = getToken(Token.AcessToken);
-    if (token !== null) {
-      authenticate(token);
-    }
+    authenticate(token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -28,8 +27,21 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<LoginContainer />} />
-        <Route path="/register" element={<RegisterContainer />} />
+        <Route
+          path="/login"
+          element={
+            <RedirectifNeeded element={<LoginContainer />} loggedIn={false} />
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <RedirectifNeeded
+              element={<RegisterContainer />}
+              loggedIn={false}
+            />
+          }
+        />
         <Route
           path="/"
           element={
