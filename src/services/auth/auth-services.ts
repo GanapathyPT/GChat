@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from "react";
 import { getApiInstance, setAccessToken } from "../../common/APIInstance";
 import { setToken, Token } from "../../common/tokenLocalStorage";
-import { AuthActions, AuthInfo } from "./AuthContext";
+import { AuthActions, AuthInfo, AuthStatus } from "./AuthContext";
 
 interface TokenReponse {
   access: string;
@@ -39,9 +39,15 @@ export async function getUserDetails(): Promise<AuthInfo> {
   return (await getApiInstance().get("auth/me/")).data;
 }
 
+export async function refreshToken(): Promise<Omit<TokenReponse, "refresh">> {
+  return (await getApiInstance().get("auth/refresh/")).data;
+}
+
 // as we do same for both login and register for now
 // writing a single function to pass it there
-const authenticate = async (tokens: TokenReponse): Promise<AuthInfo> => {
+const saveTokenAndGetUserDetails = async (
+  tokens: TokenReponse
+): Promise<AuthInfo> => {
   // for further querying
   setAccessToken(tokens.access);
 
@@ -57,12 +63,40 @@ export const getAuthActions = (
 ): AuthActions => ({
   login: async (email: string, password: string) => {
     const tokens = await loginUser(email, password);
-    const authInfo = await authenticate(tokens);
+    const authInfo = await saveTokenAndGetUserDetails(tokens);
     setAuthInfo(authInfo);
   },
   register: async (username: string, email: string, password: string) => {
     const tokens = await registerUser(username, email, password);
-    const authInfo = await authenticate(tokens);
+    const authInfo = await saveTokenAndGetUserDetails(tokens);
     setAuthInfo(authInfo);
+  },
+  authenticate: async (accessToken: string) => {
+    try {
+      setAuthInfo((info) => ({
+        ...info,
+        status: AuthStatus.AuthenticationLoading,
+      }));
+      setAccessToken(accessToken);
+      const authInfo = await getUserDetails();
+      setAuthInfo({ ...authInfo, status: AuthStatus.Authenticated });
+    } catch (err) {
+      console.error(err);
+      try {
+        // access token may be expired so refresh and try again once more
+        const newAccessToken = await refreshToken();
+        setAccessToken(newAccessToken.access);
+        const authInfo = await getUserDetails();
+        setAuthInfo({ ...authInfo, status: AuthStatus.Authenticated });
+      } catch (err) {
+        console.error(err);
+        // if we still get error
+        // refresh token is not valid
+        setAuthInfo((info) => ({
+          ...info,
+          status: AuthStatus.NotAuthenticated,
+        }));
+      }
+    }
   },
 });
