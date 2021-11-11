@@ -12,6 +12,7 @@ import { getToken, Token } from "./common/tokenLocalStorage";
 import { AuthStatus, useAuth } from "./services/auth/AuthContext";
 import { AppLoader } from "./components/common/AppLoader";
 import { RedirectifNeeded } from "./components/common/RedirectifNeeded";
+import { Home } from "./components/home/Home";
 
 function App() {
   const { authenticate, status } = useAuth();
@@ -29,28 +30,15 @@ function App() {
       <Routes>
         <Route
           path="/login"
-          element={
-            <RedirectifNeeded element={<LoginContainer />} loggedIn={false} />
-          }
+          element={<RedirectifNeeded element={<LoginContainer />} />}
         />
         <Route
           path="/register"
-          element={
-            <RedirectifNeeded
-              element={<RegisterContainer />}
-              loggedIn={false}
-            />
-          }
+          element={<RedirectifNeeded element={<RegisterContainer />} />}
         />
         <Route
           path="/"
-          element={
-            status === AuthStatus.NotAuthenticated ? (
-              <Navigate to="/login" />
-            ) : (
-              <>Home</>
-            )
-          }
+          element={<RedirectifNeeded element={<Home />} loggedIn />}
         />
       </Routes>
     </Router>
