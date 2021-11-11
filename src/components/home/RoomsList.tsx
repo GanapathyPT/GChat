@@ -21,7 +21,7 @@ function RoomsList() {
           onClick={() => selectRoom(room.id)}
           style={{ padding: 0 }}
         >
-          <div className={room.id === selectedRoom ? styles.active : ""}>
+          <div className={room.id === selectedRoom?.id ? styles.active : ""}>
             <div className={styles.roomItem}>
               <div className={styles.profilePic}>
                 <Image avatar src={getRandomAvatar(String(room.id))} />

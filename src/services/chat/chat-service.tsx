@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { atom, useRecoilState } from "recoil";
 import { getApiInstance } from "../../common/APIInstance";
 
 export interface User {
@@ -25,16 +26,29 @@ async function getRooms(): Promise<Room[]> {
   return (await getApiInstance().get("chat/rooms/")).data;
 }
 
+const roomsState = atom<Room[]>({
+  default: [],
+  key: "rooms",
+});
+
+const selectedRoomState = atom<number | undefined>({
+  default: undefined,
+  key: "selectedRoom",
+});
+
 export function useChat() {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [selectedRoom, setSelectedRoom] = useState<number>();
+  const [rooms, setRooms] = useRecoilState(roomsState);
+  const [selectedRoom, setSelectedRoom] = useRecoilState(selectedRoomState);
 
   useEffect(() => {
     (async () => {
-      const initialRooms = await getRooms();
-      setRooms(initialRooms);
+      if (rooms.length === 0) {
+        const initialRooms = await getRooms();
+        setRooms(initialRooms);
+      }
     })();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rooms]);
 
   const selectRoom = (id: number) => {
     setSelectedRoom(id);
@@ -42,7 +56,7 @@ export function useChat() {
 
   return {
     rooms,
-    selectedRoom,
+    selectedRoom: rooms.find((room) => room.id === selectedRoom),
     selectRoom,
   };
 }

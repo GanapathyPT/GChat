@@ -7,6 +7,7 @@ function Home() {
     <Grid columns="two" divided>
       <GridRow>
         <SideBar />
+        <ChatRoom />
       </GridRow>
     </Grid>
   );

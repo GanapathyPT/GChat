@@ -1,0 +1,19 @@
+.roomItem {
+  padding: 1em 0;
+  display: flex;
+  cursor: pointer;
+}
+
+.active {
+  border-right: 5px solid #2185d0;
+  background-color: #2185d011;
+}
+
+.profilePic {
+  margin-right: 1em;
+}
+
+.description {
+  font-size: 0.7em;
+  color: #777;
+}
