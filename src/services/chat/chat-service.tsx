@@ -55,6 +55,12 @@ async function getNewMessages(
     .data;
 }
 
+async function markAsRead(room: number, last_message_id: number) {
+  return (
+    await getApiInstance().post("chat/mark_as_read/", { room, last_message_id })
+  ).data;
+}
+
 const roomsState = atom<Room[]>({
   default: [],
   key: "rooms",
@@ -94,8 +100,13 @@ export function useChat() {
     setRoomList(newRoomsList);
   }, [rooms]);
 
-  const selectRoom = (id: number) => {
-    setSelectedRoom(id);
+  const selectRoom = async (selectedRoomId: number) => {
+    setSelectedRoom(selectedRoomId);
+
+    const last_message_id = rooms.find(
+      (room) => room.id === selectedRoomId
+    )?.last_message_id;
+    await markAsRead(selectedRoomId, last_message_id as number);
   };
 
   const deSelectRoom = () => {
@@ -115,6 +126,7 @@ export function useChat() {
           ? {
               ...room,
               messages: [...room.messages, newMessage],
+              last_message_id: newMessage.id,
             }
           : room
       )
@@ -145,8 +157,12 @@ export function useChatPoller() {
           const oldRooms: Room[] = JSON.parse(JSON.stringify(rooms));
           Object.keys(newMessages).forEach((key) => {
             const roomId = parseInt(key);
+            if (newMessages[roomId].length === 0) return;
+
             const room = oldRooms.findIndex((room) => room.id === roomId);
             oldRooms[room].messages.push(...newMessages[roomId]);
+            oldRooms[room].last_message_id =
+              newMessages[roomId][newMessages[roomId].length - 1].id;
           });
           return oldRooms;
         });
