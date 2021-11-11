@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { atom, useRecoilState } from "recoil";
 import { getApiInstance } from "../../common/APIInstance";
+import { useAuth } from "../auth/AuthContext";
 
 export interface User {
   id: number;
@@ -26,6 +27,15 @@ async function getRooms(): Promise<Room[]> {
   return (await getApiInstance().get("chat/rooms/")).data;
 }
 
+async function sendNewMessage(content: string, room: number) {
+  return (
+    await getApiInstance().post("chat/new_message/", {
+      content,
+      room,
+    })
+  ).data;
+}
+
 const roomsState = atom<Room[]>({
   default: [],
   key: "rooms",
@@ -37,6 +47,7 @@ const selectedRoomState = atom<number | undefined>({
 });
 
 export function useChat() {
+  const { id } = useAuth();
   const [rooms, setRooms] = useRecoilState(roomsState);
   const [selectedRoom, setSelectedRoom] = useRecoilState(selectedRoomState);
 
@@ -54,9 +65,34 @@ export function useChat() {
     setSelectedRoom(id);
   };
 
+  const deSelectRoom = () => {
+    setSelectedRoom(undefined);
+  };
+
+  const addMessage = async (message: string) => {
+    if (selectedRoom === undefined || id === undefined) return;
+    let newMessage: Message = await sendNewMessage(message, selectedRoom);
+    newMessage = {
+      ...newMessage,
+      author: id,
+    };
+    setRooms((rooms) =>
+      rooms.map((room) =>
+        room.id === selectedRoom
+          ? {
+              ...room,
+              messages: [...room.messages, newMessage],
+            }
+          : room
+      )
+    );
+  };
+
   return {
     rooms,
     selectedRoom: rooms.find((room) => room.id === selectedRoom),
     selectRoom,
+    deSelectRoom,
+    addMessage,
   };
 }

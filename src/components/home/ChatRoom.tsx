@@ -7,7 +7,7 @@ import styles from "./ChatRoom.module.scss";
 
 function ChatRoom() {
   const { id } = useAuth();
-  const { selectedRoom } = useChat();
+  const { selectedRoom, deSelectRoom, addMessage } = useChat();
   const [newMessage, setNewMessage] = useState("");
 
   if (selectedRoom === undefined) return null;
@@ -18,7 +18,7 @@ function ChatRoom() {
           className={styles.backButton}
           name="arrow left"
           size="big"
-          //   onClick={deSelectUser}
+          onClick={deSelectRoom}
         />
         <div className={styles.messagesContainer}>
           {selectedRoom?.messages.map((message) => (
@@ -41,7 +41,7 @@ function ChatRoom() {
           value={newMessage}
           onKeyPress={(e: any) => {
             if (e.charCode === 13) {
-              //   sendMessage(e.target.value);
+              addMessage(e.target.value);
               setNewMessage("");
             }
           }}
@@ -52,7 +52,7 @@ function ChatRoom() {
               icon
               active
               onClick={() => {
-                // sendMessage(message);
+                addMessage(newMessage);
                 setNewMessage("");
               }}
             >
