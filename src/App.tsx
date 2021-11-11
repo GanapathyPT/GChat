@@ -1,10 +1,5 @@
 import "semantic-ui-css/semantic.min.css";
-import {
-  Route,
-  Routes,
-  BrowserRouter as Router,
-  Navigate,
-} from "react-router-dom";
+import { Route, Routes, BrowserRouter as Router } from "react-router-dom";
 import { LoginContainer } from "./containers/login/LoginContainer";
 import { RegisterContainer } from "./containers/register/RegisterContainer";
 import { useEffect } from "react";

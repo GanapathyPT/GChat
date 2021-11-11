@@ -1,7 +1,14 @@
 import { useEffect } from "react";
-import { atom, useRecoilState } from "recoil";
+import {
+  atom,
+  useRecoilState,
+  useRecoilValue,
+  useSetRecoilState,
+} from "recoil";
 import { getApiInstance } from "../../common/APIInstance";
-import { useAuth } from "../auth/AuthContext";
+import { AuthStatus, useAuth } from "../auth/AuthContext";
+
+const POLLER_INTERVAL = 5000;
 
 export interface User {
   id: number;
@@ -23,6 +30,11 @@ export interface Room {
   last_message_id: number;
 }
 
+interface RoomList {
+  id: number;
+  last_message_id: number;
+}
+
 async function getRooms(): Promise<Room[]> {
   return (await getApiInstance().get("chat/rooms/")).data;
 }
@@ -36,6 +48,13 @@ async function sendNewMessage(content: string, room: number) {
   ).data;
 }
 
+async function getNewMessages(
+  rooms: RoomList[]
+): Promise<Record<number, Message[]>> {
+  return (await getApiInstance().post("chat/get_new_messages/", { rooms }))
+    .data;
+}
+
 const roomsState = atom<Room[]>({
   default: [],
   key: "rooms",
@@ -46,9 +65,15 @@ const selectedRoomState = atom<number | undefined>({
   key: "selectedRoom",
 });
 
+const roomListState = atom<RoomList[]>({
+  default: [],
+  key: "roomList",
+});
+
 export function useChat() {
   const { id } = useAuth();
   const [rooms, setRooms] = useRecoilState(roomsState);
+  const setRoomList = useSetRecoilState(roomListState);
   const [selectedRoom, setSelectedRoom] = useRecoilState(selectedRoomState);
 
   useEffect(() => {
@@ -59,6 +84,14 @@ export function useChat() {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rooms]);
+
+  useEffect(() => {
+    const newRoomsList = rooms.map((room) => ({
+      id: room.id,
+      last_message_id: room.last_message_id,
+    }));
+    setRoomList(newRoomsList);
   }, [rooms]);
 
   const selectRoom = (id: number) => {
@@ -95,4 +128,30 @@ export function useChat() {
     deSelectRoom,
     addMessage,
   };
+}
+
+let poller: any;
+
+export function useChatPoller() {
+  const { status } = useAuth();
+  const setRooms = useSetRecoilState(roomsState);
+  const roomList = useRecoilValue(roomListState);
+
+  useEffect(() => {
+    if (status === AuthStatus.Authenticated && roomList.length > 0) {
+      poller = setInterval(async () => {
+        const newMessages = await getNewMessages(roomList);
+        setRooms((rooms) => {
+          const oldRooms: Room[] = JSON.parse(JSON.stringify(rooms));
+          Object.keys(newMessages).forEach((key) => {
+            const roomId = parseInt(key);
+            const room = oldRooms.findIndex((room) => room.id === roomId);
+            oldRooms[room].messages.push(...newMessages[roomId]);
+          });
+          return oldRooms;
+        });
+      }, POLLER_INTERVAL);
+      return () => clearInterval(poller);
+    }
+  }, [status, roomList]);
 }

@@ -11,14 +11,14 @@ function RedirectifNeeded({ element, loggedIn }: Props) {
 
   if (status === AuthStatus.Authenticated) {
     if (loggedIn === true) return element;
-    else return <Navigate to="/" />;
+    else return <Navigate replace to="/" />;
   } else if (status === AuthStatus.NotAuthenticated) {
     if (loggedIn !== true) return element;
-    else return <Navigate to="/login" />;
+    else return <Navigate replace to="/login" />;
   }
 
   // never gonna hit here but for ts
-  return <Navigate to="/login" />;
+  return <Navigate replace to="/login" />;
 }
 
 export { RedirectifNeeded };
