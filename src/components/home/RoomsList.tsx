@@ -24,7 +24,7 @@ function RoomsList() {
           <div className={room.id === selectedRoom?.id ? styles.active : ""}>
             <div className={styles.roomItem}>
               <div className={styles.profilePic}>
-                <Image avatar src={getRandomAvatar(String(room.id))} />
+                <Image avatar src={getRandomAvatar(`${room.id}_${id}`)} />
               </div>
               <List.Content>
                 <List.Header>{getRoomTitle(room, id)}</List.Header>

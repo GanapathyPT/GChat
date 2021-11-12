@@ -28,8 +28,8 @@ const ChatList = memo(
   },
   ({ messages: prevMessages }, { messages: newMessages }) =>
     prevMessages.length === newMessages.length &&
-    prevMessages[prevMessages.length - 1].id ===
-      newMessages[newMessages.length - 1].id
+    prevMessages[prevMessages.length - 1] ===
+      newMessages[newMessages.length - 1]
 );
 
 function ChatRoom() {
