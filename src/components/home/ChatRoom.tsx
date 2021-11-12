@@ -1,14 +1,47 @@
-import { useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Button, GridColumn, Icon, Input, Segment } from "semantic-ui-react";
 import { useAuth } from "../../services/auth/AuthContext";
-import { useChat } from "../../services/chat/chat-service";
+import { Message, useChat } from "../../services/chat/chat-service";
 
 import styles from "./ChatRoom.module.scss";
 
+const ChatList = memo(
+  ({ messages }: { messages: Message[] }) => {
+    const { id } = useAuth();
+    return (
+      <>
+        {messages.map((message) => (
+          <p
+            key={message.id}
+            className={`${styles.chatMessage} ${
+              message.author === id ? styles.ourMessage : ""
+            }`}
+          >
+            <span>
+              {message.content}
+              {/* <small>{getTime(message.createdAt)}</small> */}
+            </span>
+          </p>
+        ))}
+      </>
+    );
+  },
+  ({ messages: prevMessages }, { messages: newMessages }) =>
+    prevMessages.length === newMessages.length &&
+    prevMessages[prevMessages.length - 1].id ===
+      newMessages[newMessages.length - 1].id
+);
+
 function ChatRoom() {
-  const { id } = useAuth();
+  const bottomRef = useRef<HTMLDivElement>(null);
   const { selectedRoom, deSelectRoom, addMessage } = useChat();
   const [newMessage, setNewMessage] = useState("");
+
+  useEffect(() => {
+    if (bottomRef.current !== null) {
+      bottomRef.current.scrollIntoView();
+    }
+  }, [selectedRoom, selectedRoom?.messages]);
 
   if (selectedRoom === undefined) return null;
   return (
@@ -21,20 +54,8 @@ function ChatRoom() {
           onClick={deSelectRoom}
         />
         <div className={styles.messagesContainer}>
-          {selectedRoom?.messages.map((message) => (
-            <p
-              key={message.id}
-              className={`${styles.chatMessage} ${
-                message.author === id ? styles.ourMessage : ""
-              }`}
-            >
-              <span>
-                {message.content}
-                {/* <small>{getTime(message.createdAt)}</small> */}
-              </span>
-            </p>
-          ))}
-          {/* <div ref={ref} /> */}
+          <ChatList messages={selectedRoom.messages} />
+          <div ref={bottomRef} />
         </div>
         <Input
           autoFocus

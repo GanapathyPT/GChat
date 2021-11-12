@@ -10,3 +10,7 @@ export function getRandomAvatar(seed?: string) {
     seed ? seed : getRandomString()
   }.svg`;
 }
+
+export function deepCopy(object: Object): any {
+  return JSON.parse(JSON.stringify(object));
+}

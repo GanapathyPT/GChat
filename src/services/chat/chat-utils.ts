@@ -1,4 +1,5 @@
-import { Room } from "./chat-service";
+import { deepCopy } from "../../common/utils";
+import { Message, Room } from "./chat-service";
 
 export function getRoomTitle(room: Room, currentUserId?: number) {
   if (room.title !== null) return room.title;
@@ -10,7 +11,28 @@ export function getRoomTitle(room: Room, currentUserId?: number) {
 }
 
 export function getRoomDescription(room: Room) {
-  if (room.messages.length === 0) return "Tap to start the conversation";
-  const lastMessage = room.messages[room.messages.length - 1];
+  const lastMessage = getLastMessageInRoom(room);
+  if (lastMessage === undefined) return "Tap to start the conversation";
   return lastMessage.content;
+}
+
+export function getLastMessageInRoom(room: Room): Message | undefined {
+  if (room.messages.length === 0) return;
+  const lastMessage = room.messages[room.messages.length - 1];
+  return lastMessage;
+}
+
+export function getSelectedRoomAndUpdate(
+  rooms: Room[],
+  selectedRoomId: number,
+  roomUpdate: (room: Room) => Room
+) {
+  return rooms.map((room) =>
+    room.id === selectedRoomId
+      ? {
+          ...room,
+          ...roomUpdate(deepCopy(room)),
+        }
+      : room
+  );
 }

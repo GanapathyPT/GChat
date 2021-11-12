@@ -6,9 +6,11 @@ import {
   useSetRecoilState,
 } from "recoil";
 import { getApiInstance } from "../../common/APIInstance";
+import { deepCopy } from "../../common/utils";
 import { AuthStatus, useAuth } from "../auth/AuthContext";
+import { getLastMessageInRoom, getSelectedRoomAndUpdate } from "./chat-utils";
 
-const POLLER_INTERVAL = 5000;
+const POLLER_INTERVAL = 1000;
 
 export interface User {
   id: number;
@@ -27,12 +29,12 @@ export interface Room {
   title: string | null;
   users: User[];
   messages: Message[];
-  last_message_id: number;
+  last_read_message: number;
 }
 
 interface RoomList {
-  id: number;
-  last_message_id: number;
+  room_id: number;
+  last_message: number;
 }
 
 async function getRooms(): Promise<Room[]> {
@@ -49,15 +51,18 @@ async function sendNewMessage(content: string, room: number) {
 }
 
 async function getNewMessages(
-  rooms: RoomList[]
+  room_list: RoomList[]
 ): Promise<Record<number, Message[]>> {
-  return (await getApiInstance().post("chat/get_new_messages/", { rooms }))
+  return (await getApiInstance().post("chat/get_new_messages/", { room_list }))
     .data;
 }
 
-async function markAsRead(room: number, last_message_id: number) {
+async function markAsRead(room_id: number, last_read_message: number) {
   return (
-    await getApiInstance().post("chat/mark_as_read/", { room, last_message_id })
+    await getApiInstance().post("chat/mark_as_read/", {
+      room_id,
+      last_read_message,
+    })
   ).data;
 }
 
@@ -84,29 +89,43 @@ export function useChat() {
 
   useEffect(() => {
     (async () => {
-      if (rooms.length === 0) {
-        const initialRooms = await getRooms();
-        setRooms(initialRooms);
-      }
+      const initialRooms = await getRooms();
+      setRooms(initialRooms);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rooms]);
+  }, []);
 
   useEffect(() => {
-    const newRoomsList = rooms.map((room) => ({
-      id: room.id,
-      last_message_id: room.last_message_id,
-    }));
+    const newRoomsList: RoomList[] = rooms.map((room) => {
+      const lastMessage = getLastMessageInRoom(room);
+      return {
+        room_id: room.id,
+        last_message: lastMessage !== undefined ? lastMessage.id : -1,
+      };
+    });
     setRoomList(newRoomsList);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rooms]);
 
   const selectRoom = async (selectedRoomId: number) => {
     setSelectedRoom(selectedRoomId);
 
-    const last_message_id = rooms.find(
+    const roomsCopy: Room[] = getSelectedRoomAndUpdate(
+      rooms,
+      selectedRoomId,
+      (room) => {
+        const lastMessage = getLastMessageInRoom(room);
+        return {
+          ...room,
+          last_read_message: lastMessage !== undefined ? lastMessage.id : -1,
+        };
+      }
+    );
+    const selectedRoomObj = roomsCopy.find(
       (room) => room.id === selectedRoomId
-    )?.last_message_id;
-    await markAsRead(selectedRoomId, last_message_id as number);
+    );
+    if (selectedRoomObj === undefined) return;
+    await markAsRead(selectedRoomId, selectedRoomObj.last_read_message);
   };
 
   const deSelectRoom = () => {
@@ -115,22 +134,23 @@ export function useChat() {
 
   const addMessage = async (message: string) => {
     if (selectedRoom === undefined || id === undefined) return;
+
     let newMessage: Message = await sendNewMessage(message, selectedRoom);
+    // TODO: make the API give out author too
+    // author won't be given out for new message
     newMessage = {
       ...newMessage,
       author: id,
     };
-    setRooms((rooms) =>
-      rooms.map((room) =>
-        room.id === selectedRoom
-          ? {
-              ...room,
-              messages: [...room.messages, newMessage],
-              last_message_id: newMessage.id,
-            }
-          : room
-      )
-    );
+    // let's not update locally
+    // let's get the message from poller
+    // setRooms((rooms) =>
+    //   getSelectedRoomAndUpdate(rooms, selectedRoom, (room) => ({
+    //     ...room,
+    //     messages: [...room.messages, newMessage],
+    //     last_read_message: newMessage.id,
+    //   }))
+    // );
   };
 
   return {
@@ -152,22 +172,30 @@ export function useChatPoller() {
   useEffect(() => {
     if (status === AuthStatus.Authenticated && roomList.length > 0) {
       poller = setInterval(async () => {
+        // get new messages for all the rooms
         const newMessages = await getNewMessages(roomList);
+        // if no new messages are there do nothing
+        if (!Object.values(newMessages).some((room) => room.length > 0)) return;
+
         setRooms((rooms) => {
-          const oldRooms: Room[] = JSON.parse(JSON.stringify(rooms));
+          const oldRooms: Room[] = deepCopy(rooms);
           Object.keys(newMessages).forEach((key) => {
             const roomId = parseInt(key);
+            // no new messages for the room
             if (newMessages[roomId].length === 0) return;
 
-            const room = oldRooms.findIndex((room) => room.id === roomId);
-            oldRooms[room].messages.push(...newMessages[roomId]);
-            oldRooms[room].last_message_id =
-              newMessages[roomId][newMessages[roomId].length - 1].id;
+            // get the index of room in rooms array
+            const roomIndex = oldRooms.findIndex((room) => room.id === roomId);
+            // push the new messages to the messages array of rooms
+            oldRooms[roomIndex].messages.push(...newMessages[roomId]);
+            // these message are not yet read
+            // so don't need to change the last_read_message in rooms
           });
           return oldRooms;
         });
       }, POLLER_INTERVAL);
       return () => clearInterval(poller);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, roomList]);
 }
