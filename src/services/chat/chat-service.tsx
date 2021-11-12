@@ -90,7 +90,6 @@ const roomListState = atom<RoomList[]>({
 });
 
 export function useChat() {
-  const { id } = useAuth();
   const [rooms, setRooms] = useRecoilState(roomsState);
   const setRoomList = useSetRecoilState(roomListState);
   const [selectedRoom, setSelectedRoom] = useRecoilState(selectedRoomState);
@@ -129,6 +128,7 @@ export function useChat() {
         };
       }
     );
+    setRooms(roomsCopy);
     const selectedRoomObj = roomsCopy.find(
       (room) => room.id === selectedRoomId
     );
@@ -145,11 +145,18 @@ export function useChat() {
   };
 
   const addMessage = async (message: string) => {
-    if (selectedRoom === undefined || id === undefined) return;
+    if (selectedRoom === undefined) return;
 
     // let's not update locally
     // let's get the message from poller
-    await sendNewMessage(message, selectedRoom);
+    const { id } = await sendNewMessage(message, selectedRoom);
+    // but need to change the last read message in rooms array
+    setRooms((oldRooms) =>
+      getSelectedRoomAndUpdate(oldRooms, selectedRoom, (room) => ({
+        ...room,
+        last_read_message: id,
+      }))
+    );
   };
 
   const addRoom = (room: Room) => {

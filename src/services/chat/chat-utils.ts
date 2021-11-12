@@ -36,3 +36,11 @@ export function getSelectedRoomAndUpdate(
       : room
   );
 }
+
+export function getUnreadCount(room: Room): number {
+  if (room.messages.length === 0) return 0;
+  const lastReadMessageIndex = room.messages.findIndex(
+    (message) => message.id === room.last_read_message
+  );
+  return room.messages.length - lastReadMessageIndex - 1;
+}
