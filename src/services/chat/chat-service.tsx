@@ -37,6 +37,14 @@ interface RoomList {
   last_message: number;
 }
 
+export async function addNewRoom(users: number[]): Promise<Room> {
+  return (
+    await getApiInstance().post("chat/add_room/", {
+      users,
+    })
+  ).data;
+}
+
 async function getRooms(): Promise<Room[]> {
   return (await getApiInstance().get("chat/rooms/")).data;
 }
@@ -124,7 +132,11 @@ export function useChat() {
     const selectedRoomObj = roomsCopy.find(
       (room) => room.id === selectedRoomId
     );
-    if (selectedRoomObj === undefined) return;
+    if (
+      selectedRoomObj === undefined ||
+      selectedRoomObj.last_read_message === -1
+    )
+      return;
     await markAsRead(selectedRoomId, selectedRoomObj.last_read_message);
   };
 
@@ -135,28 +147,21 @@ export function useChat() {
   const addMessage = async (message: string) => {
     if (selectedRoom === undefined || id === undefined) return;
 
-    let newMessage: Message = await sendNewMessage(message, selectedRoom);
-    // TODO: make the API give out author too
-    // author won't be given out for new message
-    newMessage = {
-      ...newMessage,
-      author: id,
-    };
     // let's not update locally
     // let's get the message from poller
-    // setRooms((rooms) =>
-    //   getSelectedRoomAndUpdate(rooms, selectedRoom, (room) => ({
-    //     ...room,
-    //     messages: [...room.messages, newMessage],
-    //     last_read_message: newMessage.id,
-    //   }))
-    // );
+    await sendNewMessage(message, selectedRoom);
+  };
+
+  const addRoom = (room: Room) => {
+    setRooms((oldRooms) => [...oldRooms, room]);
+    setSelectedRoom(room.id);
   };
 
   return {
     rooms,
     selectedRoom: rooms.find((room) => room.id === selectedRoom),
     selectRoom,
+    addRoom,
     deSelectRoom,
     addMessage,
   };
