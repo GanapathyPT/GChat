@@ -1,5 +1,6 @@
 import { Dropdown, GridColumn, Header, Search } from "semantic-ui-react";
 import { useUserSearch } from "../../services/auth/auth-services";
+import { useChat } from "../../services/chat/chat-service";
 import { RoomsList } from "./RoomsList";
 
 import styles from "./SideBar.module.scss";
@@ -12,15 +13,21 @@ function SideBar() {
     searchResult,
     searchText,
   } = useUserSearch();
+  const { selectedRoom } = useChat();
 
   return (
     <GridColumn computer={4} mobile={16}>
-      <div className={styles.sideBarContainer}>
+      <div
+        className={`${styles.sideBarContainer} ${
+          selectedRoom ? styles.hidden : ""
+        }`}
+      >
         <Header textAlign="center" size="huge">
           G Chat
         </Header>
         <div className={styles.searchBarContainer}>
           <Search
+            className={styles.searchBar}
             placeholder="Search User . . ."
             loading={searchLoading}
             onResultSelect={onResultSelect}

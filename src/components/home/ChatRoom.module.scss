@@ -3,11 +3,20 @@
   display: flex;
   flex-direction: column;
   margin: 0.5em !important;
+
+  @media (max-width: 420px) {
+    overflow: hidden;
+    margin: 0 !important;
+  }
 }
 
 .backButton {
   cursor: pointer;
   display: none !important;
+
+  @media (max-width: 420px) {
+    display: block !important;
+  }
 }
 
 .messagesContainer {

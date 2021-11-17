@@ -1,3 +1,12 @@
+.roomsList {
+  height: 70vh;
+  overflow-y: auto;
+
+  @media (max-width: 420px) {
+    height: 65vh;
+  }
+}
+
 .roomItem {
   padding: 1em 0;
   display: flex;
