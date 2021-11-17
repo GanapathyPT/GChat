@@ -74,6 +74,7 @@ async function markAsRead(room_id: number, last_read_message: number) {
   ).data;
 }
 
+let roomsFetched = false;
 const roomsState = atom<Room[]>({
   default: [],
   key: "rooms",
@@ -96,6 +97,12 @@ export function useChat() {
 
   useEffect(() => {
     (async () => {
+      if (roomsFetched) return;
+
+      // first setting is to true
+      // reason: if useChat is called all at once,
+      // the delay from the server makes it not possible to call only once
+      roomsFetched = true;
       const initialRooms = await getRooms();
       setRooms(initialRooms);
     })();
