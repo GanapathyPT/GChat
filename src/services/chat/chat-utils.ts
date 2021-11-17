@@ -1,6 +1,10 @@
 import { deepCopy } from "../../common/utils";
 import { Message, Room } from "./chat-service";
 
+interface RoomWithUnreadCount extends Room {
+  unreadCount: number;
+}
+
 export function getRoomTitle(room: Room, currentUserId?: number) {
   if (room.title !== null) return room.title;
 
@@ -43,4 +47,15 @@ export function getUnreadCount(room: Room): number {
     (message) => message.id === room.last_read_message
   );
   return room.messages.length - lastReadMessageIndex - 1;
+}
+
+export function sortRoomsByUnreadCount(rooms: Room[]): RoomWithUnreadCount[] {
+  const roomsCopy: Room[] = deepCopy(rooms);
+  const roomsWithUnreadCount = roomsCopy.map((room) => ({
+    ...room,
+    unreadCount: getUnreadCount(room),
+  }));
+  return roomsWithUnreadCount.sort(
+    (room1, room2) => room2.unreadCount - room1.unreadCount
+  );
 }
