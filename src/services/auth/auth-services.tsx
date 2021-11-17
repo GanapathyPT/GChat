@@ -2,7 +2,7 @@ import axios, { CancelTokenSource } from "axios";
 import { Dispatch, MouseEvent, SetStateAction, useState } from "react";
 import { SearchProps, SearchResultData } from "semantic-ui-react";
 import { getApiInstance, setAccessToken } from "../../common/APIInstance";
-import { setToken, Token } from "../../common/tokenLocalStorage";
+import { getToken, setToken, Token } from "../../common/tokenLocalStorage";
 import { addNewRoom, useChat, User } from "../chat/chat-service";
 import { AuthActions, AuthInfo, AuthStatus, useAuth } from "./AuthContext";
 
@@ -42,12 +42,18 @@ async function getUserDetails(): Promise<AuthInfo> {
   return (await getApiInstance().get("auth/me/")).data;
 }
 
-async function refreshToken(): Promise<Omit<TokenReponse, "refresh">> {
-  return (await getApiInstance().get("auth/refresh/")).data;
+async function refreshToken(
+  refresh: string
+): Promise<Omit<TokenReponse, "refresh">> {
+  return (
+    await getApiInstance().post("auth/refresh/", {
+      refresh,
+    })
+  ).data;
 }
 
 async function searchUser(username: string): Promise<User[]> {
-  return (await getApiInstance().get(`auth/search?username=${username}`)).data;
+  return (await getApiInstance().get(`auth/search/?username=${username}`)).data;
 }
 
 // as we do same for both login and register for now
@@ -94,8 +100,10 @@ export const getAuthActions = (
     } catch (err) {
       console.error(err);
       try {
+        const refresh = getToken(Token.RefreshToken);
+        if (refresh === null) return;
         // access token may be expired so refresh and try again once more
-        const newAccessToken = await refreshToken();
+        const newAccessToken = await refreshToken(refresh);
         setAccessToken(newAccessToken.access);
         const authInfo = await getUserDetails();
         setAuthInfo({ ...authInfo, status: AuthStatus.Authenticated });
