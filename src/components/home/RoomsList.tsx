@@ -1,4 +1,4 @@
-import { Image, Label, List } from "semantic-ui-react";
+import { Header, Icon, Image, Label, List } from "semantic-ui-react";
 import { getRandomAvatar } from "../../common/utils";
 import { useAuth } from "../../services/auth/AuthContext";
 import { useChat } from "../../services/chat/chat-service";
@@ -10,9 +10,22 @@ import {
 
 import styles from "./RoomsList.module.scss";
 
+const EmptyRoomsList = ({ username }: { username: string }) => (
+  <div className={styles.emptyListContainer}>
+    <Header as="h2" icon>
+      <Icon name="hand peace" />
+      Hii {username}
+      <Header.Subheader>search for admin to chat with me</Header.Subheader>
+    </Header>
+  </div>
+);
+
 function RoomsList() {
-  const { id } = useAuth();
+  const { id, username } = useAuth();
   const { rooms, selectedRoom, selectRoom } = useChat();
+
+  if (rooms.length === 0 && username !== undefined)
+    return <EmptyRoomsList username={username} />;
 
   return (
     <List animated celled size="big" className={styles.roomsList}>

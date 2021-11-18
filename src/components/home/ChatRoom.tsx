@@ -1,9 +1,28 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { Button, GridColumn, Icon, Input, Segment } from "semantic-ui-react";
+import {
+  Button,
+  GridColumn,
+  Header,
+  Icon,
+  Input,
+  Segment,
+} from "semantic-ui-react";
 import { useAuth } from "../../services/auth/AuthContext";
 import { Message, useChat } from "../../services/chat/chat-service";
 
 import styles from "./ChatRoom.module.scss";
+
+const EmptyChatRoom = () => (
+  <div className={styles.emptyChatRoomContainer}>
+    <Header as="h2" icon>
+      <Icon name="user" />
+      Select a Friend to Chat
+      <Header.Subheader>
+        select the friend from the sidebar to chat
+      </Header.Subheader>
+    </Header>
+  </div>
+);
 
 const ChatList = memo(
   ({ messages }: { messages: Message[] }) => {
@@ -43,7 +62,7 @@ function ChatRoom() {
     }
   }, [selectedRoom, selectedRoom?.messages]);
 
-  if (selectedRoom === undefined) return null;
+  if (selectedRoom === undefined) return <EmptyChatRoom />;
   return (
     <GridColumn computer={12} mobile={16}>
       <Segment className={styles.chatRoomContainer}>
