@@ -2,7 +2,12 @@ import axios, { CancelTokenSource } from "axios";
 import { Dispatch, MouseEvent, SetStateAction, useState } from "react";
 import { SearchProps, SearchResultData } from "semantic-ui-react";
 import { getApiInstance, setAccessToken } from "../../common/APIInstance";
-import { getToken, setToken, Token } from "../../common/tokenLocalStorage";
+import {
+  getToken,
+  removeToken,
+  setToken,
+  Token,
+} from "../../common/tokenLocalStorage";
 import { addNewRoom, useChat, User } from "../chat/chat-service";
 import { AuthActions, AuthInfo, AuthStatus, useAuth } from "./AuthContext";
 
@@ -117,6 +122,12 @@ export const getAuthActions = (
         }));
       }
     }
+  },
+  logout: () => {
+    setAccessToken("");
+    removeToken(Token.AcessToken);
+    removeToken(Token.RefreshToken);
+    setAuthInfo({ status: AuthStatus.NotAuthenticated });
   },
 });
 

@@ -21,6 +21,7 @@ export interface AuthActions {
   ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   authenticate: (accessToken: string | null) => Promise<void>;
+  logout: () => void;
 }
 
 export type AuthContextType = AuthInfo & AuthActions;
