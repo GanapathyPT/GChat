@@ -20,6 +20,21 @@ const EmptyRoomsList = ({ username }: { username: string }) => (
   </div>
 );
 
+const UnreadCountLabel = ({
+  count,
+  hidden,
+}: {
+  hidden: boolean;
+  count: number;
+}) =>
+  hidden ? null : (
+    <div className={styles.unreadCountContainer}>
+      <Label color="red" floating circular>
+        {count}
+      </Label>
+    </div>
+  );
+
 function RoomsList() {
   const { id, username } = useAuth();
   const { rooms, selectedRoom, selectRoom } = useChat();
@@ -48,13 +63,12 @@ function RoomsList() {
                   </p>
                 </List.Description>
                 {/* not showing count on selected room (hacky fix) */}
-                {room.unreadCount !== 0 && selectedRoom?.id !== room.id ? (
-                  <div className={styles.unreadCountContainer}>
-                    <Label color="red" floating circular>
-                      {room.unreadCount}
-                    </Label>
-                  </div>
-                ) : null}
+                <UnreadCountLabel
+                  count={room.unreadCount}
+                  hidden={
+                    room.unreadCount === 0 || selectedRoom?.id === room.id
+                  }
+                />
               </List.Content>
             </div>
           </div>
