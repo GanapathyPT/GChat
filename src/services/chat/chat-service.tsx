@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import {
   atom,
   useRecoilState,
@@ -121,55 +121,71 @@ export function useChat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rooms]);
 
-  const selectRoom = async (selectedRoomId: number) => {
-    setSelectedRoom(selectedRoomId);
+  const selectRoom = useCallback(
+    async (selectedRoomId: number) => {
+      setSelectedRoom(selectedRoomId);
 
-    const roomsCopy: Room[] = getSelectedRoomAndUpdate(
-      rooms,
-      selectedRoomId,
-      (room) => {
-        const lastMessage = getLastMessageInRoom(room);
-        return {
-          ...room,
-          last_read_message: lastMessage !== undefined ? lastMessage.id : -1,
-        };
-      }
-    );
-    setRooms(roomsCopy);
-    const selectedRoomObj = roomsCopy.find(
-      (room) => room.id === selectedRoomId
-    );
-    if (
-      selectedRoomObj === undefined ||
-      selectedRoomObj.last_read_message === -1
-    )
-      return;
-    await markAsRead(selectedRoomId, selectedRoomObj.last_read_message);
-  };
+      const roomsCopy: Room[] = getSelectedRoomAndUpdate(
+        rooms,
+        selectedRoomId,
+        (room) => {
+          const lastMessage = getLastMessageInRoom(room);
+          return {
+            ...room,
+            last_read_message: lastMessage !== undefined ? lastMessage.id : -1,
+          };
+        }
+      );
+      setRooms(roomsCopy);
+      const selectedRoomObj = roomsCopy.find(
+        (room) => room.id === selectedRoomId
+      );
+      if (
+        selectedRoomObj === undefined ||
+        selectedRoomObj.last_read_message === -1
+      )
+        return;
+      await markAsRead(selectedRoomId, selectedRoomObj.last_read_message);
+    },
+    [rooms, setRooms, setSelectedRoom]
+  );
 
-  const deSelectRoom = () => {
+  const deSelectRoom = useCallback(() => {
     setSelectedRoom(undefined);
-  };
+  }, [setSelectedRoom]);
 
-  const addMessage = async (message: string) => {
-    if (selectedRoom === undefined) return;
+  const addMessage = useCallback(
+    async (message: string) => {
+      if (selectedRoom === undefined) return;
 
-    // let's not update locally
-    // let's get the message from poller
-    const { id } = await sendNewMessage(message, selectedRoom);
-    // but need to change the last read message in rooms array
-    setRooms((oldRooms) =>
-      getSelectedRoomAndUpdate(oldRooms, selectedRoom, (room) => ({
-        ...room,
-        last_read_message: id,
-      }))
-    );
-  };
+      // let's not update locally
+      // let's get the message from poller
+      const { id } = await sendNewMessage(message, selectedRoom);
+      // but need to change the last read message in rooms array
+      setRooms((oldRooms) =>
+        getSelectedRoomAndUpdate(oldRooms, selectedRoom, (room) => ({
+          ...room,
+          last_read_message: id,
+        }))
+      );
+    },
+    [setRooms, selectedRoom]
+  );
 
-  const addRoom = (room: Room) => {
-    setRooms((oldRooms) => [...oldRooms, room]);
-    setSelectedRoom(room.id);
-  };
+  const addRoom = useCallback(
+    (room: Room) => {
+      setRooms((oldRooms) => [...oldRooms, room]);
+      setSelectedRoom(room.id);
+    },
+    [setRooms, setSelectedRoom]
+  );
+
+  const resetStates = useCallback(() => {
+    roomsFetched = false;
+    setRooms([]);
+    setRoomList([]);
+    setSelectedRoom(undefined);
+  }, [setSelectedRoom, setRoomList, setRooms]);
 
   return {
     rooms,
@@ -178,6 +194,7 @@ export function useChat() {
     addRoom,
     deSelectRoom,
     addMessage,
+    resetStates,
   };
 }
 

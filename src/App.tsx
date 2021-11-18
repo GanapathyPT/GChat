@@ -7,7 +7,7 @@ import { getToken, Token } from "./common/tokenLocalStorage";
 import { AuthStatus, useAuth } from "./services/auth/AuthContext";
 import { AppLoader } from "./components/common/AppLoader";
 import { RedirectifNeeded } from "./components/common/RedirectifNeeded";
-import { Home } from "./components/home/Home";
+import { HomeContainer } from "./containers/home/HomeContainer";
 
 function App() {
   const { authenticate, status } = useAuth();
@@ -33,7 +33,7 @@ function App() {
         />
         <Route
           path="/"
-          element={<RedirectifNeeded element={<Home />} loggedIn />}
+          element={<RedirectifNeeded element={<HomeContainer />} loggedIn />}
         />
       </Routes>
     </Router>
