@@ -142,7 +142,7 @@ interface SearchResult {
 
 export function useUserSearch() {
   const { id } = useAuth();
-  const { addRoom } = useChat();
+  const { selectRoom, addRoom, getRoomIfAlreadyThere } = useChat();
   const [searchText, setSearchText] = useState<string>("");
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [searchResult, setSearchResult] = useState<SearchResult[]>([]);
@@ -180,8 +180,13 @@ export function useUserSearch() {
     data: SearchResultData
   ) => {
     const user = data.result.id as number;
-    const newRoom = await addNewRoom([user]);
-    addRoom(newRoom);
+    const room = getRoomIfAlreadyThere(user);
+    if (room === undefined) {
+      const newRoom = await addNewRoom([user]);
+      addRoom(newRoom);
+    } else {
+      selectRoom(room.id);
+    }
     setSearchResult([]);
     setSearchText("");
   };

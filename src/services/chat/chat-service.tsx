@@ -180,6 +180,16 @@ export function useChat() {
     [setRooms, setSelectedRoom]
   );
 
+  const getRoomIfAlreadyThere = useCallback(
+    (userId: number) =>
+      rooms.find(
+        (room) =>
+          room.users.length === 2 &&
+          room.users.some((user) => user.id === userId)
+      ),
+    [rooms]
+  );
+
   const resetStates = useCallback(() => {
     roomsFetched = false;
     setRooms([]);
@@ -195,6 +205,7 @@ export function useChat() {
     deSelectRoom,
     addMessage,
     resetStates,
+    getRoomIfAlreadyThere,
   };
 }
 
