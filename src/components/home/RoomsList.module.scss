@@ -1,20 +1,16 @@
 .emptyListContainer {
-  height: 70vh;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  @media (max-width: 1000px) {
-    height: 65vh;
-  }
 }
 
+.emptyListContainer,
 .roomsList {
-  height: 70vh;
+  max-height: 70vh;
   overflow-y: auto;
 
   @media (max-width: 1000px) {
-    height: 65vh;
+    max-height: 65vh;
   }
 }
 

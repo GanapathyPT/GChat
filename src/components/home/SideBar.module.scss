@@ -2,13 +2,15 @@
   padding: 2em;
 }
 
-.searchBarContainer {
+.headerContainer {
+  width: 100%;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
-.searchBar {
-  flex: 1;
+.headerLogo {
+  max-width: 70px !important;
 }
 
 .hidden {
