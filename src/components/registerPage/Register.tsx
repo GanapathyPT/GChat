@@ -39,6 +39,7 @@ function Register({ ctrlRef, onSubmit }: Props) {
         required
         label="UserName"
         placeholder="username"
+        type="text"
         icon="user"
         iconPosition="left"
         value={username}
@@ -48,6 +49,8 @@ function Register({ ctrlRef, onSubmit }: Props) {
       <Form.Input
         required
         label="Email"
+        type="email"
+        inputmode="email"
         placeholder="email"
         icon="mail"
         iconPosition="left"

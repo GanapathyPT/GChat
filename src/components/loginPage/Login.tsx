@@ -45,6 +45,8 @@ function Login({ ctrlRef, onSubmit }: Props) {
       <Form.Input
         required
         label="Email"
+        type="email"
+        inputmode="email"
         placeholder="email"
         icon="mail"
         iconPosition="left"

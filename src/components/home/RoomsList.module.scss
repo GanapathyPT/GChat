@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: center;
 
-  @media (max-width: 420px) {
+  @media (max-width: 1000px) {
     height: 65vh;
   }
 }
@@ -13,7 +13,7 @@
   height: 70vh;
   overflow-y: auto;
 
-  @media (max-width: 420px) {
+  @media (max-width: 1000px) {
     height: 65vh;
   }
 }
