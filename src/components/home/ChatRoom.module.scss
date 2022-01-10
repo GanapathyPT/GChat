@@ -42,13 +42,15 @@
   margin-bottom: 0;
 
   span {
+    max-width: 75%;
     display: inline-block;
     padding: 0.3em 1em;
-    border-radius: 2.5em;
-    margin-bottom: 0.3em;
+    border-radius: 0.75em;
+    margin-bottom: 0.1em;
     background-color: #2185d0;
     font-weight: bold;
     position: relative;
+    text-align: left;
   }
 }
 
