@@ -26,13 +26,22 @@
   background-color: #2185d011;
 }
 
+.content {
+  flex: 1;
+  overflow-y: hidden;
+}
+
 .profilePic {
   margin-right: 1em;
 }
 
 .description {
   font-size: 0.7em;
+  width: 100%;
   color: #777;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .unreadCountContainer {
