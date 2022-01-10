@@ -22,6 +22,7 @@ export interface Message {
   id: number;
   author: number;
   content: string;
+  created_at: string;
 }
 
 export interface Room {

@@ -9,6 +9,7 @@ import {
 } from "semantic-ui-react";
 import { useAuth } from "../../services/auth/AuthContext";
 import { Message, useChat } from "../../services/chat/chat-service";
+import { getMessageTime } from "../../services/chat/chat-utils";
 
 import styles from "./ChatRoom.module.scss";
 
@@ -36,9 +37,11 @@ const ChatList = memo(
               message.author === id ? styles.ourMessage : ""
             }`}
           >
-            <span>
-              {message.content}
-              {/* <small>{getTime(message.createdAt)}</small> */}
+            <span className={styles.messageContainer}>
+              <span className={styles.message}>{message.content}</span>
+              <small className={styles.timeStamp}>
+                {getMessageTime(message.created_at)}
+              </small>
             </span>
           </p>
         ))}

@@ -59,3 +59,9 @@ export function sortRoomsByUnreadCount(rooms: Room[]): RoomWithUnreadCount[] {
     (room1, room2) => room2.unreadCount - room1.unreadCount
   );
 }
+
+export function getMessageTime(createdAt: string): string {
+  const dateTime = new Date(createdAt);
+  const hours = dateTime.getHours() === 12 ? 12 : dateTime.getHours() % 12;
+  return `${hours}:${dateTime.getMinutes()}`;
+}
