@@ -60,8 +60,27 @@ export function sortRoomsByUnreadCount(rooms: Room[]): RoomWithUnreadCount[] {
   );
 }
 
+export function getDateFromDateTime(dateTime: string, separator = "-") {
+  const date = new Date(dateTime);
+  return `${date.getDate()}${separator}${date.getMonth()}${separator}${date.getFullYear()}`;
+}
+
 export function getMessageTime(createdAt: string): string {
   const dateTime = new Date(createdAt);
   const hours = dateTime.getHours() === 12 ? 12 : dateTime.getHours() % 12;
   return `${hours}:${dateTime.getMinutes()}`;
+}
+
+export function groupMessagesByDate(messages: Message[]) {
+  const groupedMessages: [string, Message[]][] = [];
+
+  messages.forEach((message) => {
+    const date = getDateFromDateTime(message.created_at);
+
+    const oldIndex = groupedMessages.findIndex((val) => val[0] === date);
+    if (oldIndex !== -1) groupedMessages[oldIndex][1].push(message);
+    else groupedMessages.push([date, [message]]);
+  });
+
+  return groupedMessages;
 }

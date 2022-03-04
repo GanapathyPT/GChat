@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, useState } from "react";
 import {
   Button,
+  Divider,
   GridColumn,
   Header,
   Icon,
@@ -9,7 +10,10 @@ import {
 } from "semantic-ui-react";
 import { useAuth } from "../../services/auth/AuthContext";
 import { Message, useChat } from "../../services/chat/chat-service";
-import { getMessageTime } from "../../services/chat/chat-utils";
+import {
+  getMessageTime,
+  groupMessagesByDate,
+} from "../../services/chat/chat-utils";
 
 import styles from "./ChatRoom.module.scss";
 
@@ -30,20 +34,25 @@ const ChatList = memo(
     const { id } = useAuth();
     return (
       <>
-        {messages.map((message) => (
-          <p
-            key={message.id}
-            className={`${styles.chatMessage} ${
-              message.author === id ? styles.ourMessage : ""
-            }`}
-          >
-            <span className={styles.messageContainer}>
-              <span className={styles.message}>{message.content}</span>
-              <small className={styles.timeStamp}>
-                {getMessageTime(message.created_at)}
-              </small>
-            </span>
-          </p>
+        {groupMessagesByDate(messages).map(([date, messagesOnThatDate]) => (
+          <>
+            <Divider horizontal>{date}</Divider>
+            {messagesOnThatDate.map((message) => (
+              <p
+                key={message.id}
+                className={`${styles.chatMessage} ${
+                  message.author === id ? styles.ourMessage : ""
+                }`}
+              >
+                <span className={styles.messageContainer}>
+                  <span className={styles.message}>{message.content}</span>
+                  <small className={styles.timeStamp}>
+                    {getMessageTime(message.created_at)}
+                  </small>
+                </span>
+              </p>
+            ))}
+          </>
         ))}
       </>
     );
